@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 共享笔记 — 法学资料库</title>
+<style>
+  :root { color-scheme: light }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f0 100%);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+    color: #2d3748;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 6px;
+  }
+  header .subtitle {
+    font-size: 0.9rem;
+    color: #718096;
+  }
+  .updated {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin-top: 4px;
+  }
+  .stats {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    text-align: center;
+    min-width: 80px;
+  }
+  .stat .num { font-size: 1.5rem; font-weight: 700; color: #3182ce; }
+  .stat .label { font-size: 0.75rem; color: #718096; margin-top: 2px; }
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: white;
+    color: #2d3748;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: #3182ce; }
+  .search-box::placeholder { color: #a0aec0; }
+  .sort-btn {
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    color: #4a5568;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sort-btn:hover { background: #edf2f7; }
+  .sort-btn.active { background: #3182ce; color: white; border-color: #3182ce; }
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .file-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+  .file-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .file-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .icon-pdf { background: #fed7d7; color: #c53030; }
+  .icon-docx { background: #c6f6d5; color: #276749; }
+  .icon-pages { background: #fefcbf; color: #975a16; }
+  .icon-other { background: #e2e8f0; color: #4a5568; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a202c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .file-meta {
+    font-size: 0.78rem;
+    color: #718096;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .file-meta span { white-space: nowrap; }
+  .file-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-download {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-download:hover { background: #2b6cb0; }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #a0aec0;
+    font-size: 1rem;
+  }
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.75rem;
+    color: #a0aec0;
+    line-height: 1.6;
+  }
+  .footer a { color: #718096; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .tag-new { background: #fefcbf; color: #975a16; }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.5rem; }
+    .file-card { padding: 12px 14px; gap: 10px; }
+    .file-actions { display: none; }
+    .file-name { font-size: 0.88rem; }
+    .stats { gap: 8px; }
+    .stat { padding: 10px 14px; min-width: 60px; }
+    .stat .num { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📚 共享笔记</h1>
+    <p class="subtitle">法学资料库 · 华东政法大学</p>
+    <p class="updated" id="updateTime">最后更新：加载中...</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="totalFiles">-</div><div class="label">文件总数</div></div>
+    <div class="stat"><div class="num" id="totalSize">-</div><div class="label">总大小</div></div>
+    <div class="stat"><div class="num" id="pdfCount">-</div><div class="label">PDF</div></div>
+    <div class="stat"><div class="num" id="docxCount">-</div><div class="label">DOCX</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-box" id="searchInput" placeholder="🔍 搜索文件名或课程名称..." oninput="renderFiles()">
+    <button class="sort-btn active" onclick="setSort('name')" id="sortName">按名称</button>
+    <button class="sort-btn" onclick="setSort('date')" id="sortDate">按日期</button>
+    <button class="sort-btn" onclick="setSort('size')" id="sortSize">按大小</button>
+  </div>
+
+  <div class="file-list" id="fileList"></div>
+
+  <div class="footer">
+    <p>点击文件名即可下载 · 此页面自动更新</p>
+    <p>Powered by <a href="#">共享笔记项目</a> · 仅供学习交流</p>
+  </div>
+</div>
+
+<script>
+// ===== FILE DATA =====
+// Auto-generated on page load from the embedded list below.
+// To add or remove files, edit this array and reload the page.
+const FILES = [
+  { name: "24-25学年第2学期 mw中法史期末重点.pdf", size: 1142727, date: "2026-06-14", ext: "pdf" },
+  { name: "24-25学年第2学期 宪法学期末重点yyr.pdf", size: 2495672, date: "2026-06-14", ext: "pdf" },
+  { name: "24-25学年第2学期期末刑分重点lx+myx.pdf", size: 1895418, date: "2026-06-14", ext: "pdf" },
+  { name: "24010102016上海市第七届案例分析大赛.pdf", size: 1507225, date: "2026-06-14", ext: "pdf" },
+  { name: "24刑法总论 mll+myx版本 期末考试重点.pdf", size: 3808757, date: "2026-06-14", ext: "pdf" },
+  { name: "24法理学 hxz+shb版本 重点.pdf", size: 640502, date: "2026-06-14", ext: "pdf" },
+  { name: "25-26学年第1学期 wj+wxh+cy刑事诉讼法期末考试重点.pdf", size: 1996890, date: "2026-06-14", ext: "pdf" },
+  { name: "25-26学年第1学期 wj+wxh+cy刑事诉讼法期末考试重点.docx", size: 1125680, date: "2026-06-14", ext: "docx" },
+  { name: "25-26学年第1学期lx外法史期末重点.pdf", size: 635037, date: "2026-06-14", ext: "pdf" },
+  { name: "25-26学年第1学期lx外法史期末重点.pages", size: 204122, date: "2026-06-14", ext: "pages" },
+  { name: "25-26学年第1学期qy+ygp行政法期末重点.pdf", size: 2023861, date: "2026-06-14", ext: "pdf" },
+  { name: "刑法学分论 李翔.pdf", size: 4123776, date: "2026-06-14", ext: "pdf" },
+  { name: "刑法总论 小马哥.pdf", size: 17037953, date: "2026-06-14", ext: "pdf" },
+  { name: "刑诉法.docx", size: 1860280, date: "2026-06-14", ext: "docx" },
+  { name: "合同法 吴一鸣 24010102016.pdf", size: 11957319, date: "2026-06-14", ext: "pdf" },
+  { name: "宪法学 姚岳绒.pdf", size: 2623744, date: "2026-06-14", ext: "pdf" },
+  { name: "民法总论 姚明斌.pdf", size: 12963851, date: "2026-06-14", ext: "pdf" },
+  { name: "西方法律思想史 王婧.pdf", size: 10808811, date: "2026-06-14", ext: "pdf" }
+];
+
+let sortBy = 'name';
+let sortAsc = true;
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function formatDate(dateStr) {
+  var d = new Date(dateStr);
+  var m = d.getMonth() + 1;
+  var day = d.getDate();
+  return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+}
+
+function getIconClass(ext) {
+  if (ext === 'pdf') return 'icon-pdf';
+  if (ext === 'docx' || ext === 'doc') return 'icon-docx';
+  if (ext === 'pages') return 'icon-pages';
+  return 'icon-other';
+}
+
+function getIconLetter(ext) {
+  if (ext === 'pdf') return 'P';
+  if (ext === 'docx' || ext === 'doc') return 'W';
+  if (ext === 'pages') return 'Pg';
+  return '?';
+}
+
+function getBadgeLabel(ext) {
+  if (ext === 'pdf') return 'PDF';
+  if (ext === 'docx') return 'Word';
+  if (ext === 'pages') return 'Pages';
+  return ext.toUpperCase();
+}
+
+function isNew(dateStr) {
+  var fileDate = new Date(dateStr);
+  var sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  return fileDate >= sevenDaysAgo;
+}
+
+function renderFiles() {
+  var search = (document.getElementById('searchInput').value || '').toLowerCase();
+  var filtered = FILES.filter(function(f) {
+    return f.name.toLowerCase().indexOf(search) !== -1;
+  });
+
+  filtered.sort(function(a, b) {
+    var cmp;
+    if (sortBy === 'name') cmp = a.name.localeCompare(b.name, 'zh-Hans-CN');
+    else if (sortBy === 'date') cmp = a.date.localeCompare(b.date);
+    else cmp = a.size - b.size;
+    return sortAsc ? cmp : -cmp;
+  });
+
+  var list = document.getElementById('fileList');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty">📭 没有找到匹配的文件</div>';
+  } else {
+    list.innerHTML = filtered.map(function(f) {
+      var iconClass = getIconClass(f.ext);
+      var iconLetter = getIconLetter(f.ext);
+      var badge = getBadgeLabel(f.ext);
+      var newTag = isNew(f.date) ? '<span class="tag tag-new">NEW</span>' : '';
+      return '<a class="file-card" href="' + encodeURIComponent(f.name) + '" download>' +
+        '<div class="file-icon ' + iconClass + '">' + iconLetter + '</div>' +
+        '<div class="file-info">' +
+          '<div class="file-name">' + f.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + newTag + '</div>' +
+          '<div class="file-meta">' +
+            '<span>📄 ' + badge + '</span>' +
+            '<span>📦 ' + formatSize(f.size) + '</span>' +
+            '<span>📅 ' + formatDate(f.date) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="file-actions">' +
+          '<span class="btn-download">⬇ 下载</span>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  }
+
+  // Update stats
+  document.getElementById('totalFiles').textContent = FILES.length;
+  var totalBytes = FILES.reduce(function(s, f) { return s + f.size; }, 0);
+  document.getElementById('totalSize').textContent = formatSize(totalBytes);
+  document.getElementById('pdfCount').textContent = FILES.filter(function(f) { return f.ext === 'pdf'; }).length;
+  document.getElementById('docxCount').textContent = FILES.filter(function(f) { return f.ext === 'docx' || f.ext === 'pages'; }).length;
+  document.getElementById('updateTime').textContent = '最后更新：' + new Date().toLocaleString('zh-CN');
+}
+
+function setSort(key) {
+  if (sortBy === key) sortAsc = !sortAsc;
+  else { sortBy = key; sortAsc = true; }
+  document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('sort' + key.charAt(0).toUpperCase() + key.slice(1)).classList.add('active');
+  renderFiles();
+}
+
+// Init
+renderFiles();
+</script>
+</body>
+</html>
