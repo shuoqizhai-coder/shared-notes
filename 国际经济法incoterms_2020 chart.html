@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+:root { color-scheme: light }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  background: #f5f0eb;
+  padding: 40px;
+  color: #222;
+}
+h1 {
+  font-size: 22px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.subtitle {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 32px;
+}
+
+/* Container */
+.chart { max-width: 1100px; margin: 0 auto; }
+
+/* Group headers */
+.group-row {
+  display: flex;
+  align-items: center;
+  margin: 18px 0 6px 0;
+  padding-left: 4px;
+}
+.group-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 3px;
+  color: #fff;
+}
+.group-tag.e { background: #8e44ad; }
+.group-tag.f { background: #e74c3c; }
+.group-tag.c { background: #e67e22; }
+.group-tag.d { background: #27ae60; }
+.group-desc {
+  font-size: 11px;
+  color: #999;
+  margin-left: 10px;
+}
+
+/* One term = one row */
+.term-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Left label area */
+.term-label {
+  width: 160px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.term-abbr {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.term-full {
+  font-size: 11px;
+  color: #999;
+  margin-top: 1px;
+}
+
+/* Bars area */
+.term-bars {
+  flex: 1;
+}
+
+/* One line: Risk / Transport / Insurance */
+.bar-line {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  margin-bottom: 3px;
+}
+.bar-label {
+  width: 58px;
+  font-size: 9.5px;
+  color: #666;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 8px;
+  line-height: 1.2;
+}
+
+.bar-track {
+  flex: 1;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-seller {
+  height: 100%;
+  background: #2E75B6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #fff;
+  font-weight: 600;
+  min-width: 0;
+}
+.bar-buyer {
+  height: 100%;
+  background: #ED7D31;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #fff;
+  font-weight: 600;
+  min-width: 0;
+}
+
+/* Divider arrows */
+.divider-normal {
+  width: 0;
+  height: 16px;
+  border-left: 2px dashed #555;
+  position: absolute;
+  z-index: 2;
+}
+.divider-warn {
+  width: 0;
+  height: 16px;
+  border-left: 3px solid #e74c3c;
+  position: absolute;
+  z-index: 3;
+}
+
+/* Insurance bars */
+.bar-insurance-full {
+  height: 100%;
+  background: #2ecc71;
+  border-radius: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #fff;
+  font-weight: 700;
+}
+.bar-insurance-split {
+  height: 100%;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+}
+.bar-insurance-seller {
+  height: 100%;
+  background: #c8ddf0;
+}
+.bar-insurance-buyer {
+  height: 100%;
+  background: #fce4d0;
+}
+
+/* Mode tag */
+.mode-tag {
+  width: 130px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-top: 3px;
+}
+.mode-tag span {
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.mode-tag .sea {
+  background: #d4eafc;
+  color: #2471a3;
+}
+.mode-tag .any {
+  background: #d5f5e3;
+  color: #1e8449;
+}
+
+/* Tooltip marker */
+.tooltip-marker {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 14px;
+  cursor: help;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* C-group warning callout */
+.callout {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  background: #fef3e2;
+  border-left: 4px solid #e67e22;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #7d5a29;
+}
+.callout strong { color: #e67e22; }
+
+.legend {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 16px 0 0 0;
+  font-size: 11px;
+  color: #666;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Risk & transport aligned marker */
+.aligned-marker {
+  font-size: 9px;
+  color: #999;
+  margin-left: 6px;
+  font-style: italic;
+}
+
+/* Export note */
+.export-note {
+  margin-top: 30px;
+  padding: 12px 16px;
+  background: #e8eaf0;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #555;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="chart">
+
+<h1>Incoterms® 2020 — Risk, Transport &amp; Insurance</h1>
+<div class="subtitle">
+  Blue = Seller's responsibility &nbsp;|&nbsp; Orange = Buyer's responsibility &nbsp;|&nbsp;
+  <span style="color:#e74c3c;font-weight:700;">Red dashed</span> = Risk &amp; Transport split at different points (⚠ exam trap) &nbsp;|&nbsp;
+  <span style="color:#2ecc71;font-weight:700;">Green</span> = Seller must provide insurance
+</div>
+
+<!-- ================= E GROUP ================= -->
+<div class="group-row">
+  <span class="group-tag e">E</span>
+  <span class="group-desc">Departure — Seller's minimum obligation</span>
+</div>
+
+<script>
+function termRow(abbr, full, riskPct, transportPct, insuranceSeller, mode) {
+  document.write('<div class="term-row">');
+  document.write('<div class="term-label"><div class="term-abbr">' + abbr + '</div><div class="term-full">' + full + '</div></div>');
+  document.write('<div class="term-bars">');
+
+  // Risk bar
+  var riskSplitSame = (Math.abs(riskPct - transportPct) < 3);
+  document.write('<div class="bar-line">');
+  document.write('<div class="bar-label">Risk Transfer</div>');
+  document.write('<div class="bar-track" style="position:relative;">');
+  document.write('<div class="bar-seller" style="width:' + riskPct + '%">' + (riskPct > 25 ? 'Seller bears risk' : (riskPct > 8 ? 'Seller' : '')) + '</div>');
+  document.write('<div class="bar-buyer" style="width:' + (100-riskPct) + '%">' + ((100-riskPct) > 25 ? 'Buyer bears risk' : ((100-riskPct) > 8 ? 'Buyer' : '')) + '</div>');
+  // Divider
+  var dStyle = riskSplitSame ? 'divider-normal' : 'divider-warn';
+  document.write('<div class="' + dStyle + '" style="left:' + riskPct + '%;"></div>');
+  document.write('</div>');
+  if (!riskSplitSame) document.write('<span style="font-size:9px;color:#e74c3c;margin-left:6px;white-space:nowrap;">⚠ diverges from transport ↓</span>');
+  document.write('</div>');
+
+  // Transport bar
+  document.write('<div class="bar-line">');
+  document.write('<div class="bar-label">Transport</div>');
+  document.write('<div class="bar-track" style="position:relative;">');
+  document.write('<div class="bar-seller" style="width:' + transportPct + '%">' + (transportPct > 30 ? 'Seller pays freight' : (transportPct > 8 ? 'Seller' : '')) + '</div>');
+  document.write('<div class="bar-buyer" style="width:' + (100-transportPct) + '%">' + ((100-transportPct) > 30 ? 'Buyer pays freight' : ((100-transportPct) > 10 ? 'Buyer' : '')) + '</div>');
+  document.write('<div class="' + dStyle + '" style="left:' + transportPct + '%;"></div>');
+  document.write('</div>');
+  document.write('</div>');
+
+  // Insurance bar
+  document.write('<div class="bar-line">');
+  document.write('<div class="bar-label">Insurance</div>');
+  if (insuranceSeller) {
+    document.write('<div class="bar-track">');
+    document.write('<div class="bar-insurance-full">✓ Seller MUST buy insurance (minimum cover) — CIF / CIP only</div>');
+    document.write('</div>');
+  } else {
+    document.write('<div class="bar-track">');
+    document.write('<div class="bar-insurance-split">');
+    document.write('<div class="bar-insurance-seller" style="width:' + riskPct + '%"></div>');
+    document.write('<div class="bar-insurance-buyer" style="width:' + (100-riskPct) + '%"></div>');
+    document.write('</div>');
+    document.write('</div>');
+    document.write('<span style="font-size:9px;color:#aaa;margin-left:6px;white-space:nowrap;">Party bearing risk typically insures</span>');
+  }
+  document.write('</div>');
+
+  document.write('</div>'); // term-bars
+  document.write('<div class="mode-tag"><span class="' + (mode === 'sea' ? 'sea' : 'any') + '">' + (mode === 'sea' ? 'Sea & Inland Waterway' : 'Any Mode of Transport') + '</span></div>');
+  document.write('</div>'); // term-row
+}
+</script>
+
+<script>termRow('EXW', 'Ex Works', 5, 5, false, 'any');</script>
+
+<!-- ================= F GROUP ================= -->
+<div class="group-row">
+  <span class="group-tag f">F</span>
+  <span class="group-desc">Main Carriage Unpaid — Buyer arranges &amp; pays for main transport</span>
+</div>
+
+<script>termRow('FCA', 'Free Carrier', 20, 20, false, 'any');</script>
+<script>termRow('FAS', 'Free Alongside Ship', 25, 25, false, 'sea');</script>
+<script>termRow('FOB', 'Free On Board', 30, 30, false, 'sea');</script>
+
+<!-- ================= C GROUP ================= -->
+<div class="group-row">
+  <span class="group-tag c">C</span>
+  <span class="group-desc">Main Carriage Paid — Seller pays freight to destination, BUT risk passes at shipment</span>
+</div>
+
+<div class="callout">
+  <strong>⚠ Critical Exam Point:</strong> In all C-group terms, the <strong>risk split</strong> and <strong>transport cost split</strong> occur at <em>different points</em>.
+  Seller pays freight to the destination, but risk transfers to buyer at the port/carrier at shipment.
+  If goods are damaged in transit, <strong>buyer bears the loss</strong> even though seller paid the freight.
+</div>
+
+<script>termRow('CFR', 'Cost and Freight', 30, 70, false, 'sea');</script>
+<script>termRow('CIF', 'Cost, Insurance & Freight', 30, 70, true, 'sea');</script>
+<script>termRow('CPT', 'Carriage Paid To', 30, 70, false, 'any');</script>
+<script>termRow('CIP', 'Carriage & Insurance Paid To', 30, 70, true, 'any');</script>
+
+<!-- ================= D GROUP ================= -->
+<div class="group-row">
+  <span class="group-tag d">D</span>
+  <span class="group-desc">Arrival — Seller bears all risk &amp; cost to destination</span>
+</div>
+
+<script>termRow('DAP', 'Delivered at Place', 85, 85, false, 'any');</script>
+<script>termRow('DPU', 'Delivered at Place Unloaded', 92, 92, false, 'any');</script>
+<script>termRow('DDP', 'Delivered Duty Paid', 97, 97, false, 'any');</script>
+
+</div>
+
+<div class="export-note" style="max-width:1100px;margin:30px auto 0;">
+  <strong>How to read this chart:</strong><br>
+  Each row = one Incoterm term. Three bars per row: Risk Transfer, Transport Costs, Insurance.<br>
+  &bull; <strong>Blue</strong> = seller's responsibility. <strong>Orange</strong> = buyer's responsibility.<br>
+  &bull; A <strong>red dashed divider</strong> means the risk and transport bars split at different points — this only happens in C-group, and it's the #1 exam trap.<br>
+  &bull; A <strong>solid green bar</strong> means the seller is <em>obligated</em> to buy insurance under that Incoterm (CIF and CIP only).<br>
+  &bull; For all other terms, the party bearing the risk typically arranges insurance, but it's not mandated by the Incoterm itself.<br>
+  &bull; DAP vs. DPU: the only difference is <strong>who unloads</strong> at destination. DPU = seller unloads; DAP = buyer unloads.<br>
+  &bull; DDP = DAP + seller handles import clearance &amp; pays all duties/taxes.
+</div>
+
+</body>
+</html>
